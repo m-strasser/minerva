@@ -1,0 +1,6 @@
+[flake8]
+ignore          = E221, # multiple spaces around operator
+                  E402, # module level import not at top of file (b/c gi.require_version)
+                  E701, # multiple statements on one line
+
+max-line-length = 90
