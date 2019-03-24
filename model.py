@@ -47,6 +47,14 @@ class Book(Base):
         except NoResultFound:
             return None
 
+    @classmethod
+    def fetch(cls, isbn, author, title, db):
+        """Try to fetch a book via isbn or author-title pair."""
+        book = cls.exists(isbn, db)
+        if book:
+            return book
+        return cls.exists_author_title(author, title, db)
+
 
 def get_db(path):
     engine = create_engine('sqlite:///{}'.format(path))

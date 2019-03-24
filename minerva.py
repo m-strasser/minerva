@@ -109,6 +109,26 @@ class Minerva(Gtk.Application):
         db.commit()
         self.quit()
 
+    def set_active_book(self, book):
+        if not book:
+            self.selected_book = None
+            self.statusbar.push(
+                self.statusbar.get_context_id('Selected book'),
+                "Error fetching book information from the database!"
+            )
+
+            self.btn_edit.hide()
+            self.btn_delete.hide()
+        else:
+            self.selected_book = book
+            self.statusbar.push(
+                self.statusbar.get_context_id('Selected book'),
+                '"{}" by {}'.format(book.title, book.author)
+            )
+
+            self.btn_edit.show()
+            self.btn_delete.show()
+
 
 if __name__ == '__main__':
     app = Minerva()

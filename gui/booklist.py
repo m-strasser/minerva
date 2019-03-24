@@ -2,6 +2,8 @@ import gi
 gi.require_version('Gtk', '3.0')
 from gi.repository import Gtk
 
+from model import Book
+
 
 class BookList(Gtk.ScrolledWindow):
     ISBN = 0
@@ -113,9 +115,17 @@ class BookList(Gtk.ScrolledWindow):
     def on_selection_changed(self, selection):
         model, iter = selection.get_selected()
         if iter is not None:
-            self.parent.statusbar.push(
-                self.parent.statusbar.get_context_id('Selected book'),
-                '"{}" by {}'.format(model[iter][1], model[iter][2]))
+            self.selected_path = model.get_path(iter)
+            self.selected_book = Book.fetch(
+                model[iter][self.ISBN],
+                model[iter][self.TITLE],
+                model[iter][self.AUTHOR],
+                self.parent.db
+            )
+            self.parent.set_active_book(self.selected_book)
+        else:
+            self.selection = None
+            self.selected_book = None
 
     def append(self, entry):
         """Append an entry to the list."""
