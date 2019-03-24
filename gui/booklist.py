@@ -22,6 +22,7 @@ class BookList(Gtk.ScrolledWindow):
     def _setup_view(self, books):
         """Populate ListStore and add a filter."""
         self.data = Gtk.ListStore(str, str, str, bool, bool, bool, str)
+
         for b in books:
             self.data.append(b.to_list())
 
@@ -56,7 +57,7 @@ class BookList(Gtk.ScrolledWindow):
         read_column = Gtk.TreeViewColumn('Read', self.read_renderer, active=5)
         self.tree_view.append_column(read_column)
 
-        self.location_renderer  = Gtk.CellRendererText(editable=True)
+        self.location_renderer = Gtk.CellRendererText(editable=True)
         self.location_renderer.set_property('editable', True)
         self.location_renderer.connect('edited', self.on_location_edited)
         self.tree_view.append_column(
@@ -130,6 +131,10 @@ class BookList(Gtk.ScrolledWindow):
     def append(self, entry):
         """Append an entry to the list."""
         self.data.append(entry.to_list())
+
+    def remove_selected(self):
+        """Remove the currently selected entry from the list."""
+        self.data.remove(self.data.get_iter(self.selected_path))
 
     def search(self, query):
         """Filter the list by the given term."""

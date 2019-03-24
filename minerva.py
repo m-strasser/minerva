@@ -25,6 +25,8 @@ class Minerva(Gtk.Application):
         self.vbox           = builder.get_object('vbox')
         self.tv_filters     = builder.get_object('tv_filters')
         self.statusbar      = builder.get_object('statusbar')
+        self.btn_edit       = builder.get_object('btn_edit')
+        self.btn_delete     = builder.get_object('btn_delete')
         self.books          = BookList(parent=self, books=self.books)
         self.filters        = Gtk.ListStore(str)
         self.info_bar       = Gtk.InfoBar(no_show_all=True)
@@ -77,11 +79,38 @@ class Minerva(Gtk.Application):
                 self.add_book_handler.added_book.title))
         elif self.add_book_handler.added_book:
             self.books.append(self.add_book_handler.added_book)
+            self.db.add(self.add_book_handler.added_book)
+            self.db.commit()
 
     def on_btn_add_book_clicked(self, button):
         self.add_book_handler = AddBookHandler(self.db, self.window)
         self.add_book_handler.dialog.connect('destroy', self.on_add_book_dialog_close)
         self.add_book_handler.dialog.show_all()
+
+    def on_btn_edit_clicked(self, button):
+        pass
+
+    def on_btn_delete_clicked(self, button):
+        if self.selected_book:
+            dialog = Gtk.MessageDialog(
+                parent=self.window,
+                flags=Gtk.DialogFlags.MODAL | Gtk.DialogFlags.DESTROY_WITH_PARENT,
+                type=Gtk.MessageType.ERROR,
+                buttons=Gtk.ButtonsType.YES_NO,
+                message_format="Are you sure you want to delete '{}'?".format(
+                    self.selected_book.title
+                )
+            )
+            response = dialog.run()
+
+            if response == Gtk.ResponseType.YES:
+                self.db.delete(self.books.selected_book)
+                self.db.commit()
+                self.books.remove_selected()
+            else:
+                pass
+
+            dialog.destroy()
 
     def on_info_bar_response(self, info_bar, response_id):
         info_bar.hide()
@@ -96,18 +125,6 @@ class Minerva(Gtk.Application):
 
     def on_search_changed(self, search_entry):
         self.books.search(search_entry.get_text().strip())
-
-    def on_quit(self, action, param):
-        self.statusbar.push(self.statusbar.get_context_id('Closing'),
-                            'Saving database...')
-        db = model.get_db(self.config['db_path'])
-        for e in self.books.data:
-            b = model.Book(isbn=e[0], title=e[1], author=e[2],
-                           own=e[3], want=e[4], read=e[5],
-                           location=e[6])
-            db.merge(b)
-        db.commit()
-        self.quit()
 
     def set_active_book(self, book):
         if not book:
