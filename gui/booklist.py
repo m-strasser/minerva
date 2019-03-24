@@ -4,6 +4,10 @@ from gi.repository import Gtk
 
 
 class BookList(Gtk.ScrolledWindow):
+    ISBN = 0
+    TITLE = 1
+    AUTHOR = 2
+
     def __init__(self, parent, books):
         super(BookList, self).__init__()
         self.parent = parent
@@ -27,12 +31,13 @@ class BookList(Gtk.ScrolledWindow):
         self.isbn_renderer      = Gtk.CellRendererText(editable=True)
         self.title_renderer     = Gtk.CellRendererText(editable=True)
         self.author_renderer    = Gtk.CellRendererText(editable=True)
+
         self.tree_view.append_column(
-            Gtk.TreeViewColumn('ISBN', self.isbn_renderer, text=0))
+            Gtk.TreeViewColumn('ISBN', self.isbn_renderer, text=self.ISBN))
         self.tree_view.append_column(
-            Gtk.TreeViewColumn('Title', self.title_renderer, text=1))
+            Gtk.TreeViewColumn('Title', self.title_renderer, text=self.TITLE))
         self.tree_view.append_column(
-            Gtk.TreeViewColumn('Author', self.author_renderer, text=2))
+            Gtk.TreeViewColumn('Author', self.author_renderer, text=self.AUTHOR))
 
         self.own_renderer = Gtk.CellRendererToggle()
         self.own_renderer.connect('toggled', self.on_own_toggled)
@@ -100,9 +105,9 @@ class BookList(Gtk.ScrolledWindow):
 
         location = model[iter][6].lower() if model[iter][6] else ''
 
-        return (self.filter_by in model[iter][0].lower() or
-                self.filter_by in model[iter][1].lower() or
-                self.filter_by in model[iter][2].lower() or
+        return (self.filter_by in model[iter][self.ISBN].lower() or
+                self.filter_by in model[iter][self.TITLE].lower() or
+                self.filter_by in model[iter][self.AUTHOR].lower() or
                 self.filter_by in location)
 
     def on_selection_changed(self, selection):
