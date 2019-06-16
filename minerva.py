@@ -62,6 +62,16 @@ class Minerva(Gtk.Application):
         self.search_entry.grab_focus()
         self.window.connect('delete-event', self.on_quit)
 
+    def on_quit(self, action, param):
+        db = model.get_db(self.config['db_path'])
+        for e in self.books.data:
+            b = model.Book(isbn=e[0], title=e[1], author=e[2],
+                           own=e[3], want=e[4], read=e[5],
+                           location=e[6])
+            db.merge(b)
+        db.commit()
+        self.quit()
+
     def on_add_book_dialog_close(self, dialog):
         if self.add_book_handler.added_book and not self.add_book_handler.is_new:
             self.show_message('"{}" is already in your library'.format(
