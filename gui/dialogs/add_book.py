@@ -96,6 +96,8 @@ class AddBookHandler(object):
             self.lbl_message.hide()
         except InvalidISBNError as e:
             self._show_message(str(e))
+        except NoResultsError as e:
+            self._show_message(str(e))
 
     def _search_by_query(self, entry, identifier):
         query = entry.get_text().strip()
