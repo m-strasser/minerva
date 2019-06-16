@@ -32,8 +32,13 @@ class BookList(Gtk.ScrolledWindow):
         self.tree_view = Gtk.TreeView.new_with_model(self.filter)
 
         self.isbn_renderer      = Gtk.CellRendererText(editable=True)
+        self.isbn_renderer.connect('edited', self.on_isbn_edited)
+
         self.title_renderer     = Gtk.CellRendererText(editable=True)
+        self.title_renderer.connect('edited', self.on_title_edited)
+
         self.author_renderer    = Gtk.CellRendererText(editable=True)
+        self.author_renderer.connect('edited', self.on_author_edited)
 
         self.tree_view.append_column(
             Gtk.TreeViewColumn('ISBN', self.isbn_renderer, text=self.ISBN))
@@ -71,6 +76,18 @@ class BookList(Gtk.ScrolledWindow):
                 self.title_renderer.get_property('editing') or
                 self.author_renderer.get_property('editing') or
                 self.location_renderer.get_property('editing'))
+
+    def on_isbn_edited(self, cell, path, new_text):
+        abs_path = self._convert_filtered_path_to_path(path)
+        self.data[abs_path][0] = new_text
+
+    def on_title_edited(self, cell, path, new_text):
+        abs_path = self._convert_filtered_path_to_path(path)
+        self.data[abs_path][1] = new_text
+
+    def on_author_edited(self, cell, path, new_text):
+        abs_path = self._convert_filtered_path_to_path(path)
+        self.data[abs_path][2] = new_text
 
     def on_location_edited(self, cell, path, new_text):
         abs_path = self._convert_filtered_path_to_path(path)
