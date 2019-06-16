@@ -6,6 +6,7 @@ import sys
 from gi.repository import Gdk, Gtk
 from gui.booklist import BookList
 from gui.dialogs.add_book import AddBookHandler
+from gui.utils import setup_info_bar
 from utils import read_config_file
 
 
@@ -29,23 +30,16 @@ class Minerva(Gtk.Application):
         self.btn_delete     = builder.get_object('btn_delete')
         self.books          = BookList(parent=self, books=self.books)
         self.filters        = Gtk.ListStore(str)
-        self.info_bar       = Gtk.InfoBar(no_show_all=True)
-        self.info_msg       = Gtk.Label('')
-        self.info_ok_btn    = self.info_bar.add_button('OK', Gtk.ResponseType.OK)
         self.search_entry   = Gtk.SearchEntry()
 
-        content_area        = self.info_bar.get_content_area()
-        content_area.add(self.info_msg)
-        self.info_bar.connect('response', self.on_info_bar_response)
-        self.info_bar.hide()
-        self.info_msg.show()
+        setup_info_bar(self)
+        self.vbox.pack_end(self.info_bar, False, True, 0)
 
         self._setup_filters(self.filters, self.tv_filters)
         builder.get_object('hpaned').pack2(self.books)
         builder.get_object('hbox').pack_start(self.search_entry, True, True, 0)
         builder.connect_signals(self)
 
-        self.vbox.pack_end(self.info_bar, False, True, 0)
         self.search_entry.connect('search-changed', self.on_search_changed)
         self.window.connect('key-press-event', self.on_key_press_event)
 
@@ -57,11 +51,6 @@ class Minerva(Gtk.Application):
         text = Gtk.CellRendererText()
         view.set_model(self.filters)
         view.append_column(Gtk.TreeViewColumn('Filter', text, text=0))
-
-    def _show_message(self, message):
-        self.info_msg.set_text(message)
-        self.info_bar.show()
-        self.info_ok_btn.grab_focus()
 
     def do_startup(self):
         Gtk.Application.do_startup(self)
@@ -75,7 +64,7 @@ class Minerva(Gtk.Application):
 
     def on_add_book_dialog_close(self, dialog):
         if self.add_book_handler.added_book and not self.add_book_handler.is_new:
-            self._show_message('"{}" is already in your library'.format(
+            self.show_message('"{}" is already in your library'.format(
                 self.add_book_handler.added_book.title))
         elif self.add_book_handler.added_book:
             self.books.append(self.add_book_handler.added_book)
@@ -111,9 +100,6 @@ class Minerva(Gtk.Application):
                 pass
 
             dialog.destroy()
-
-    def on_info_bar_response(self, info_bar, response_id):
-        info_bar.hide()
 
     def on_key_press_event(self, widget, event):
         if not self.books.editing:

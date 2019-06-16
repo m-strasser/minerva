@@ -2,6 +2,7 @@ import gi
 import requests
 gi.require_version('Gtk', '3.0')
 from exc import InvalidISBNError, NoResultsError
+from ..utils import setup_info_bar
 from gi.repository import Gdk, Gtk
 from gi.repository.GdkPixbuf import Pixbuf
 from model import Book
@@ -15,6 +16,7 @@ class AddBookHandler(object):
         self.dialog             = self.builder.get_object('dialog_add_book')
         self.lbl_message        = self.builder.get_object('lbl_message')
         self.lbl_manual_message = self.builder.get_object('lbl_manual_message')
+        self.vbox               = self.builder.get_object('vbox')
         self.added_book         = None
         self.identifier         = Identifier.ISBN
         self.is_new             = False
@@ -25,6 +27,9 @@ class AddBookHandler(object):
         self.db                 = db
 
         self.dialog.set_transient_for(parent)
+
+        setup_info_bar(self)
+        self.vbox.pack_end(self.info_bar, False, True, 0)
 
         self.tv_results = self.builder.get_object('treeview_results')
         render_text     = Gtk.CellRendererText(width_chars=150, wrap_width=150)
@@ -46,7 +51,7 @@ class AddBookHandler(object):
                     self.is_new = True
                 self.dialog.close()
             else:
-                self._show_message(
+                self.show_message(
                     'You need to select a book to add to the library.')
         elif self.current_page == 'MANUAL':
             isbn    = self.builder.get_object('entry_isbn').get_text().strip()
@@ -73,15 +78,11 @@ class AddBookHandler(object):
 
     def _has_query(self, entry):
         if entry.get_text().strip() == '':
-            self._show_message('Please enter a search query.')
+            self.show_message('Please enter a search query.')
             return False
         else:
             self.lbl_message.hide()
             return True
-
-    def _show_message(self, msg):
-        self.lbl_message.set_text(msg)
-        self.lbl_message.show()
 
     def _search_by_isbn(self, entry):
         isbn = entry.get_text().strip()
@@ -95,9 +96,9 @@ class AddBookHandler(object):
             self._set_result_entry(book)
             self.lbl_message.hide()
         except InvalidISBNError as e:
-            self._show_message(str(e))
+            self.show_message(str(e))
         except NoResultsError as e:
-            self._show_message(str(e))
+            self.show_message(str(e))
 
     def _search_by_query(self, entry, identifier):
         query = entry.get_text().strip()
@@ -109,7 +110,7 @@ class AddBookHandler(object):
                 store.append([r.title, r.author])
             self.lbl_message.hide()
         except NoResultsError as e:
-            self._show_message(str(e))
+            self.show_message(str(e))
 
     def _search(self, entry_search):
         if self._has_query(entry_search):
