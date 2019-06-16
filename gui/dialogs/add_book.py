@@ -46,9 +46,8 @@ class AddBookHandler(object):
                     self.is_new = True
                 self.dialog.close()
             else:
-                self.lbl_message.set_text(
+                self._show_message(
                     'You need to select a book to add to the library.')
-                self.lbl_message.show()
         elif self.current_page == 'MANUAL':
             isbn    = self.builder.get_object('entry_isbn').get_text().strip()
             title   = self.builder.get_object('entry_title').get_text().strip()
@@ -74,12 +73,15 @@ class AddBookHandler(object):
 
     def _has_query(self, entry):
         if entry.get_text().strip() == '':
-            self.lbl_message.set_text('Please enter a search query.')
-            self.lbl_message.show()
+            self._show_message('Please enter a search query.')
             return False
         else:
             self.lbl_message.hide()
             return True
+
+    def _show_message(self, msg):
+        self.lbl_message.set_text(msg)
+        self.lbl_message.show()
 
     def _search_by_isbn(self, entry):
         isbn = entry.get_text().strip()
@@ -93,8 +95,7 @@ class AddBookHandler(object):
             self._set_result_entry(book)
             self.lbl_message.hide()
         except InvalidISBNError as e:
-            self.lbl_message.set_text(str(e))
-            self.lbl_message.show()
+            self._show_message(str(e))
 
     def _search_by_query(self, entry, identifier):
         query = entry.get_text().strip()
@@ -106,8 +107,7 @@ class AddBookHandler(object):
                 store.append([r.title, r.author])
             self.lbl_message.hide()
         except NoResultsError as e:
-            self.lbl_message.set_text(str(e))
-            self.lbl_message.show()
+            self._show_message(str(e))
 
     def _search(self, entry_search):
         if self._has_query(entry_search):
